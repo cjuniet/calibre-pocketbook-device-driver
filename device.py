@@ -237,16 +237,21 @@ class POCKETBOOK_IMPROVED(USBMS, PocketBookImprovedDeviceConfig):
 
                 if row != None:
                     title,author,firstauthor,sort_title = row
+                    
+                    calibre_title = book_metadata.title
+                    calibre_author = ', '.join(book_metadata.authors)
+                    calibre_firstauthor = book_metadata.author_sort_map[book_metadata.authors[0]]
+                    calibre_sort_title = book_metadata.title_sort
 
-                    if (title != book_metadata.title or 
-                        author != book_metadata.authors[0] or
-                        sort_title != book_metadata.title_sort or
-                        firstauthor != book_metadata.authors[0]):
-                        debug_print('PB_IMPROVED: Title or author mismatch')
-                        debug_print('PB_IMPROVED: ', book_metadata.title, title)
-                        debug_print('PB_IMPROVED: ', book_metadata.title_sort, sort_title)
-                        debug_print('PB_IMPROVED: ', str(book_metadata.authors))
-                        debug_print('PB_IMPROVED: ', str(book_metadata.author_sort))
+                    if (title != calibre_title or 
+                        author != calibre_author or
+                        sort_title != calibre_sort_title or
+                        firstauthor != calibre_firstauthor):
+                        debug_print('PB_IMPROVED: metadata mismatch for book', device_book_id)
+                        debug_print('PB_IMPROVED:  title:', title, ' ->', calibre_title)
+                        debug_print('PB_IMPROVED:  author:', author, ' ->', calibre_author)
+                        debug_print('PB_IMPROVED:  firstauthor:', firstauthor, ' ->', calibre_firstauthor)
+                        debug_print('PB_IMPROVED:  sort_title:', sort_title, ' ->', calibre_sort_title)
 
                         with closing(connection.cursor()) as update_cursor:
                             update_cursor.execute('''
@@ -259,12 +264,12 @@ class POCKETBOOK_IMPROVED(USBMS, PocketBookImprovedDeviceConfig):
                                     , SORT_TITLE = ?
                                 WHERE ID = ?
                             ''', (
-                                book_metadata.title,
-                                book_metadata.title[:1].upper(),
-                                book_metadata.authors[0],
-                                book_metadata.authors[0],
-                                book_metadata.authors[0][:1].upper(),
-                                book_metadata.title_sort,
+                                calibre_title,
+                                calibre_sort_title[0].upper(),
+                                calibre_author,
+                                calibre_firstauthor,
+                                calibre_firstauthor[0].upper(),
+                                calibre_sort_title,
                                 device_book_id
                             ))
 
